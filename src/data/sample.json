@@ -1,0 +1,12 @@
+{
+  "pieces": [
+    {"id": "p1", "width_mm": 600, "height_mm": 400, "quantity": 4},
+    {"id": "p2", "width_mm": 300, "height_mm": 300, "quantity": 10},
+    {"id": "p3", "width_mm": 1200, "height_mm": 600, "quantity": 1}
+  ],
+  "stocks": [
+    {"id": "s1", "width_mm": 2400, "height_mm": 1200, "quantity": 5, "price": 25.0}
+  ],
+  "kerf_mm": 3.0,
+  "objective": "min_waste"
+}

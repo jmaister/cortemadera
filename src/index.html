@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wood Cutting Optimizer (Client)</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1>Wood Cutting Optimizer (Client)</h1>
+    </header>
+
+    <main class="layout">
+      <section class="panel inputs">
+        <h2>Input</h2>
+
+        <div class="controls top-controls">
+          <label>Kerf (mm): <input id="kerf" type="number" value="3" step="0.1"></label>
+            <label>Objective:
+            <select id="objective">
+              <option value="min_price" selected>Minimize Price</option>
+              <option value="min_waste">Minimize Waste</option>
+              <option value="min_cuts">Minimize Cuts</option>
+              <option value="min_source_boards">Minimize Source Boards</option>
+            </select>
+          </label>
+          <label><input id="chk-use-worker" type="checkbox"> Use Web Worker</label>
+          <label><input id="chk-auto-calc" type="checkbox" value="on"> Auto-calc</label>
+        </div>
+
+        <div class="controls">
+          <div class="buttons">
+            <button id="btn-load-sample">Load Sample</button>
+            <button id="btn-save-config">Save</button>
+            <button id="btn-load-saved">Load Saved</button>
+            <button id="btn-calc" style="background-color: green;">Calculate</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <h3>Presets</h3>
+          <div class="preset-controls">
+            <div class="paste-area">
+              <h4>Paste Pieces</h4>
+              <textarea id="paste-pieces" placeholder="e.g.\n5 580x300\n2 580x100"></textarea>
+              <div><button id="btn-import-pieces">Import Pieces</button></div>
+            </div>
+
+            <div class="paste-area">
+              <h4>Paste Stocks / Prices</h4>
+              <textarea id="paste-stocks" placeholder="e.g.\n2000x400 58.90\n2200x600 68.50"></textarea>
+              <div><button id="btn-import-stocks">Import Stocks</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor">
+          <h3>Pieces</h3>
+          <div class="editor-table">
+            <table id="pieces-table">
+              <thead><tr><th>ID</th><th>Width (mm)</th><th>Height (mm)</th><th>Quantity</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <button id="btn-add-piece">Add Piece</button>
+          </div>
+
+          <h3>Stocks</h3>
+          <div class="editor-table">
+            <table id="stocks-table">
+              <thead><tr><th>ID</th><th>Width (mm)</th><th>Height (mm)</th><th>Quantity</th><th>Unlimited</th><th>Price</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <button id="btn-add-stock">Add Stock</button>
+          </div>
+
+          <h3>Raw JSON</h3>
+          <textarea id="input-json" spellcheck="false"></textarea>
+        </div>
+
+        <div class="status-row">
+          <span id="status">Ready</span>
+          <progress id="calc-progress" value="0" max="100" style="width:100%;display:none;margin-top:8px"></progress>
+          <span id="progress-text" style="display:inline-block;margin-top:6px;color:#666;font-size:13px"></span>
+        </div>
+      </section>
+
+      <section class="panel preview">
+        <h2>Preview</h2>
+        <div id="svg-container" class="svg-wrap"></div>
+      </section>
+
+      <section class="panel results">
+        <h2>Metrics</h2>
+        <pre id="metrics">No results yet.</pre>
+        <div class="exports">
+          <button id="btn-export-json">Export JSON</button>
+          <button id="btn-export-csv">Export CSV</button>
+          <button id="btn-export-svg">Export SVG</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>
