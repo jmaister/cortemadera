@@ -22,6 +22,10 @@ body{margin:0;background:#f2f4f7;color:#111}
 .status-row{margin-top:8px}
 #status{font-size:13px;color:var(--muted)}
 .controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+.controls.presets{flex-direction:column;align-items:flex-start}
+.controls.presets h3{margin:0 0 8px}
+.preset-controls{display:flex;gap:8px;width:100%}
+.preset-controls .paste-area{flex:1}
 .controls label{font-size:13px;color:var(--muted)}
 .controls input[type=number]{width:80px}
 .buttons{margin-left:auto}
@@ -31,3 +35,14 @@ body{margin:0;background:#f2f4f7;color:#111}
 .exports{display:flex;gap:8px;margin-top:8px}
 button{background:#2b7cff;color:#fff;border:0;padding:8px 10px;border-radius:4px;cursor:pointer}
 button:hover{opacity:0.95}
+@media print{
+	/* Hide the raw JSON textarea when printing */
+	#input-json{display:none !important}
+    /* hide presets */
+    .controls.presets{display:none !important}
+    .controls.top-controls{display:none !important}
+    .controls .buttons{display:none !important}
+
+    /* Generic hide for any element */
+    .no-print{display:none !important}
+}

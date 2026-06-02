@@ -286,6 +286,16 @@ export function initApp(): void{
   document.getElementById('btn-export-csv')!.addEventListener('click', ()=>{ if(!lastSolution) return alert('No solution to export'); let rows = ['board_index,stock_id,piece_id,width_mm,height_mm,x_mm,y_mm']; for(const b of lastSolution.boards){ for(const p of b.placements || []){ rows.push([b.board_index,b.stock_id,p.piece_id,p.width_mm,p.height_mm,p.x_mm,p.y_mm].join(',')); } } const b = new Blob([rows.join('\n')], {type:'text/csv'}); downloadBlob(b, 'cutlist.csv'); });
   document.getElementById('btn-export-svg')!.addEventListener('click', ()=>{ if(!lastSolution) return alert('No solution to export'); const svg = getSvgString(svgContainer, lastSolution, {}); const b = new Blob([svg], {type:'image/svg+xml'}); downloadBlob(b, 'layout.svg'); });
 
+  // Re-render with print-friendly options when printing (wider strokes, larger gaps)
+  if(typeof window !== 'undefined' && window.addEventListener){
+    window.addEventListener('beforeprint', ()=>{
+      if(lastSolution) renderSolution(svgContainer, lastSolution, { gapMultiplier: 1.3, strokeMultiplier: 1.6, patternScale: 3.0, labelFontSize: 20 });
+    });
+    window.addEventListener('afterprint', ()=>{
+      if(lastSolution) renderSolution(svgContainer, lastSolution, {});
+    });
+  }
+
   (function init(){
     const raw = localStorage.getItem('woodcut_config');
     if(raw){
