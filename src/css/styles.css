@@ -3,6 +3,14 @@
 body{margin:0;background:#f2f4f7;color:#111}
 .header{background:var(--accent);color:#fff;padding:12px 20px}
 .header h1{margin:0;font-size:18px}
+.header-row{display:flex;align-items:center;gap:16px}
+.nav{margin-left:auto;display:flex;gap:12px;align-items:center}
+.nav a{color:#fff;text-decoration:none;font-size:13px;opacity:0.92;padding:6px 8px;border-radius:4px}
+.nav a:hover{opacity:1;text-decoration:underline}
+.nav a.active{background:rgba(255,255,255,0.16);opacity:1;text-decoration:none}
+.view{display:none}
+.view.active{display:block}
+.home{padding:16px;max-width:960px}
 .layout{display:grid;grid-template-columns:640px 1fr;grid-template-rows:1fr auto;grid-template-areas:"inputs preview" "inputs metrics";gap:16px;padding:16px}
 .inputs{grid-area:inputs}
 .preview{grid-area:preview}
@@ -35,6 +43,19 @@ body{margin:0;background:#f2f4f7;color:#111}
 .exports{display:flex;gap:8px;margin-top:8px}
 button{background:#2b7cff;color:#fff;border:0;padding:8px 10px;border-radius:4px;cursor:pointer}
 button:hover{opacity:0.95}
+.muted-block{margin-top:10px;font-size:13px;color:var(--muted)}
+
+.shelf-layout{display:grid;grid-template-columns:420px 1fr;grid-template-rows:auto 1fr;gap:16px;padding:16px}
+.shelf-inputs{grid-column:1;grid-row:1 / span 2}
+.shelf-preview{grid-column:2;grid-row:1}
+.shelf-results{grid-column:2;grid-row:2}
+.shelf-controls{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.shelf-controls label{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.shelf-controls input[type=number]{width:140px;padding:6px;border:1px solid #e6e9ee;border-radius:4px}
+.table-wrap{overflow:auto}
+.simple-table{width:100%;border-collapse:collapse}
+.simple-table th,.simple-table td{padding:8px;border-bottom:1px solid #f0f2f5;font-size:13px;text-align:left}
+
 @media print{
 	/* Hide the raw JSON textarea when printing */
 	#input-json{display:none !important}
@@ -42,6 +63,8 @@ button:hover{opacity:0.95}
     .controls.presets{display:none !important}
     .controls.top-controls{display:none !important}
     .controls .buttons{display:none !important}
+
+    .nav{display:none !important}
 
     /* Generic hide for any element */
     .no-print{display:none !important}
