@@ -8,7 +8,7 @@
 </head>
 <body>
   <div id="app">
-    <header class="header">
+    <header class="header no-print">
       <h1>Wood Cutting Optimizer (Client)</h1>
     </header>
 
@@ -63,7 +63,7 @@
               <thead><tr><th>ID</th><th>Width (mm)</th><th>Height (mm)</th><th>Quantity</th><th></th></tr></thead>
               <tbody></tbody>
             </table>
-            <button id="btn-add-piece">Add Piece</button>
+            <button id="btn-add-piece" class="no-print">Add Piece</button>
           </div>
 
           <h3>Stocks</h3>
@@ -72,14 +72,14 @@
               <thead><tr><th>ID</th><th>Width (mm)</th><th>Height (mm)</th><th>Quantity</th><th>Unlimited</th><th>Price</th><th></th></tr></thead>
               <tbody></tbody>
             </table>
-            <button id="btn-add-stock">Add Stock</button>
+            <button id="btn-add-stock" class="no-print">Add Stock</button>
           </div>
 
           <h3 class="no-print">Raw JSON</h3>
           <textarea id="input-json" spellcheck="false"></textarea>
         </div>
 
-        <div class="status-row">
+        <div class="status-row no-print">
           <span id="status">Ready</span>
           <progress id="calc-progress" value="0" max="100" style="width:100%;display:none;margin-top:8px"></progress>
           <span id="progress-text" style="display:inline-block;margin-top:6px;color:#666;font-size:13px"></span>

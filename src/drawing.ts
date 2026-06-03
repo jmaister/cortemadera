@@ -54,7 +54,31 @@ export function renderSolution(container: HTMLElement | string, solution: any, o
 
   // compute panel gap based on label size to avoid overlap between stacked boards
   const panelGap = Math.max(baseGap, LABEL_FONT_PX + 24) * gapMultiplier;
-  const svgH = boards.reduce((s:any,b:any)=> s + Math.round((b.stock_height_mm||0) * scale) + panelGap, 60);
+  // Prepare footer summary data (counts of stock sizes and total price) so we can
+  // reserve space at the bottom of the SVG before rendering boards.
+  const stockSizeCounts: Record<string, number> = {};
+  const stockSizePrice: Record<string, number> = {};
+  for(const bb of boards){
+    const key = `${bb.stock_width_mm}x${bb.stock_height_mm}`;
+    stockSizeCounts[key] = (stockSizeCounts[key] || 0) + 1;
+    if(typeof stockSizePrice[key] === 'undefined'){
+      stockSizePrice[key] = Number(bb.total_price || bb.price || 0);
+    }
+  }
+  const stockKeys = Object.keys(stockSizeCounts).sort((a,b)=>{
+    const [aw,ah] = a.split('x').map((v)=>Number(v)||0);
+    const [bw,bh] = b.split('x').map((v)=>Number(v)||0);
+    if(aw === bw) return bh - ah;
+    return bw - aw;
+  });
+  const totalPriceVal = (solution && solution.metrics && typeof solution.metrics.total_price === 'number')
+    ? solution.metrics.total_price
+    : boards.reduce((s:any,bb:any)=> s + (bb.total_price || 0), 0);
+  const nfPrice = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const summaryLineCount = 1 + 1 + stockKeys.length; // price line + header + each stock type
+  const lineHeight = LABEL_FONT_PX + 6;
+  const summaryHeight = Math.max(48, summaryLineCount * lineHeight + 12);
+  const svgH = boards.reduce((s:any,b:any)=> s + Math.round((b.stock_height_mm||0) * scale) + panelGap, 60) + summaryHeight;
 
   // stroke widths adjusted by multiplier to make printed lines thicker
   const boardStroke = (1.0 * strokeMultiplier).toFixed(2);
@@ -92,21 +116,29 @@ export function renderSolution(container: HTMLElement | string, solution: any, o
     
     svg += `<g transform="translate(40,${yOff})">`;
     svg += `<rect class="board" x="0" y="0" width="${w}" height="${h}" rx="6"/>`;
-    // stock labels: add white background rects so text is readable over the board
-    const stockLine1 = `${stockLabel} — waste ${b.waste_mm2} mm²`;
-    const stockLine2 = `${b.stock_width_mm}×${b.stock_height_mm} mm`;
+    // stock labels: show stock id, waste percent on its own line, and dimensions below
+    const stockArea = (b.stock_width_mm || 0) * (b.stock_height_mm || 0);
+    const wastePct = (stockArea > 0 && Number(b.waste_mm2)) ? (Number(b.waste_mm2) / stockArea) * 100 : 0;
+    const wastePctStr = `${parseFloat(wastePct.toFixed(1))}%`;
+    const stockLine1 = `${stockLabel}`;
+    const stockLine2 = `Waste: ${wastePctStr}`;
+    const stockLine3 = `${b.stock_width_mm}×${b.stock_height_mm} mm`;
     const stockLine1W = Math.max(40, Math.round(stockLine1.length * CHAR_W));
     const stockLine2W = Math.max(40, Math.round(stockLine2.length * CHAR_W));
+    const stockLine3W = Math.max(40, Math.round(stockLine3.length * CHAR_W));
     const sideRectH = LABEL_FONT_PX + 6;
     const sideGap = Math.max(4, Math.round(LABEL_FONT_PX * 0.15));
     const sideTextY1 = LABEL_FONT_PX + 2;
     const sideTextY2 = sideTextY1 + sideRectH + sideGap;
+    const sideTextY3 = sideTextY2 + sideRectH + sideGap;
     const sideTextX = w + 8;
     const sideRectX = sideTextX - 4;
     svg += `<rect x="${sideRectX}" y="${sideTextY1 - LABEL_FONT_PX - 2}" width="${stockLine1W + 8}" height="${sideRectH}" rx="3" fill="#fff" />`;
     svg += `<text class="meta" x="${sideTextX}" y="${sideTextY1}">${stockLine1}</text>`;
     svg += `<rect x="${sideRectX}" y="${sideTextY2 - LABEL_FONT_PX - 2}" width="${stockLine2W + 8}" height="${sideRectH}" rx="3" fill="#fff" />`;
     svg += `<text class="meta" x="${sideTextX}" y="${sideTextY2}">${stockLine2}</text>`;
+    svg += `<rect x="${sideRectX}" y="${sideTextY3 - LABEL_FONT_PX - 2}" width="${stockLine3W + 8}" height="${sideRectH}" rx="3" fill="#fff" />`;
+    svg += `<text class="meta" x="${sideTextX}" y="${sideTextY3}">${stockLine3}</text>`;
 
     /* Top dimension (width) */
     const topY = -10;
@@ -191,6 +223,23 @@ export function renderSolution(container: HTMLElement | string, solution: any, o
     svg += `</g>`;
     yOff += h + panelGap;
   }
+
+  // Footer summary block: Total price and stocks-needed list
+  svg += `<g transform="translate(40,${yOff})">`;
+  let footerY = LABEL_FONT_PX + 2;
+  svg += `<text class="meta" x="0" y="${footerY}">Precio total: ${nfPrice.format(totalPriceVal)}</text>`;
+  footerY += lineHeight;
+  svg += `<text class="meta" x="0" y="${footerY}">Taleros necesarios:</text>`;
+  footerY += lineHeight;
+  for(const key of stockKeys){
+    const count = stockSizeCounts[key];
+    const perPrice = stockSizePrice[key] || 0;
+    const lineTotal = Number(perPrice) * Number(count);
+    svg += `<text class="meta" x="8" y="${footerY}">${key} mm Cantidad: ${count} Precio: ${nfPrice.format(perPrice)} Total: ${nfPrice.format(lineTotal)}</text>`;
+    footerY += lineHeight;
+  }
+  svg += `</g>`;
+  yOff += summaryHeight;
   svg += `</svg>`;
 
   container.innerHTML = svg;
