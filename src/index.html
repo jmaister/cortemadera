@@ -7,14 +7,14 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div id="app">
+  <div id="root">
     <header class="header no-print">
       <div class="header-row">
         <h1>Wood Tools</h1>
         <nav class="nav">
           <a href="#/home" data-route="home">Home</a>
           <a href="#/optimizer" data-route="optimizer">Optimizer</a>
-          <a href="#/shelf" data-route="shelf">Shelf Calculator</a>
+          <a href="#/shelf" data-route="shelf">Complete Shelf Calculator</a>
         </nav>
       </div>
     </header>
@@ -123,7 +123,8 @@
     <section id="view-shelf" class="view">
       <main class="shelf-layout">
         <section class="panel shelf-inputs">
-          <h2>Shelf Calculator</h2>
+          <h2>Complete Shelf Calculator</h2>
+          <p class="muted-block">Enter the cabinet dimensions and the calculator will show the shelf spacing, placement heights, and the pieces to cut in one view.</p>
           <div class="shelf-controls">
             <label>Shelf height (mm): <input id="shelf-cabinet-height" type="number" value="2000" step="1"></label>
             <label>Shelf width (mm): <input id="shelf-width" type="number" value="800" step="1"></label>
@@ -131,6 +132,8 @@
             <label>Top clearance (mm): <input id="shelf-top-clearance" type="number" value="0" step="1"></label>
             <label>Shelf thickness (mm): <input id="shelf-thickness" type="number" value="18" step="0.1"></label>
             <label>Number of shelves: <input id="shelf-count" type="number" value="4" step="1" min="0"></label>
+            <label>Decorative top height (mm): <input id="shelf-decorative-top-height" type="number" value="250" step="1"></label>
+            <label><input id="shelf-include-decorative-top" type="checkbox" checked> Include decorative top piece</label>
           </div>
           <div id="shelf-summary" class="muted-block"></div>
         </section>
@@ -156,11 +159,27 @@
               <tbody id="shelf-table-body"></tbody>
             </table>
           </div>
+
+          <h3>Cut pieces</h3>
+          <div class="table-wrap">
+            <table class="simple-table">
+              <thead>
+                <tr>
+                  <th>Piece</th>
+                  <th>Width (mm)</th>
+                  <th>Height (mm)</th>
+                  <th>Qty</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="shelf-piece-table-body"></tbody>
+            </table>
+          </div>
         </section>
       </main>
     </section>
   </div>
 
-  <script type="module" src="./main.ts"></script>
+  <script type="module" src="./main.tsx"></script>
 </body>
 </html>

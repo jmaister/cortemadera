@@ -1,5 +1,5 @@
-import { solve } from '../solver';
-import { renderSolution, getSvgString } from '../drawing';
+import { solve } from '../solver.js';
+import { renderSolution, getSvgString } from '../drawing.js';
 
 export function initOptimizer(): void {
   const inputArea = document.getElementById('input-json') as HTMLTextAreaElement;
@@ -202,7 +202,7 @@ export function initOptimizer(): void {
       const w = Math.round(Number(m[1]));
       const h = Math.round(Number(m[2]));
       const id = alphabet[added % alphabet.length] || 'P';
-      createPieceRow(id, w, h, qty);
+      createPieceRow(id, String(w), String(h), qty);
       added++;
     }
     if (added) {
@@ -236,7 +236,7 @@ export function initOptimizer(): void {
       const w = Math.round(Number(m[1]));
       const h = Math.round(Number(m[2]));
       const id = (alphabet[added % alphabet.length] || 'S') + (alphabet[added % alphabet.length] || 'S');
-      createStockRow(id, w, h, qty, price, unlimited);
+      createStockRow(id, String(w), String(h), qty, price, unlimited);
       added++;
     }
     if (added) {

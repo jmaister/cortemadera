@@ -5,6 +5,8 @@ export type ShelfInputs = {
   shelf_count: number;
   top_clearance_mm: number;
   shelf_thickness_mm: number;
+  decorative_top_height_mm: number;
+  include_decorative_top: boolean;
 };
 
 export type ShelfPosition = {
@@ -14,11 +16,20 @@ export type ShelfPosition = {
   distance_to_top_mm: number;
 };
 
+export type ShelfPiece = {
+  name: string;
+  width_mm: number;
+  height_mm: number;
+  quantity: number;
+  note?: string;
+};
+
 export type ShelfResult = {
   inputs: ShelfInputs;
   usable_height_mm: number;
   spacing_mm: number;
   shelves: ShelfPosition[];
+  pieces: ShelfPiece[];
 };
 
 function clampInt(n: number, min: number, max: number): number {
@@ -38,6 +49,8 @@ export function calculateShelves(raw: Partial<ShelfInputs>): ShelfResult {
   const top_clearance_mm = clampNum(Number(raw.top_clearance_mm), 0, 100000);
   const shelf_thickness_mm = clampNum(Number((raw as any).shelf_thickness_mm), 0, 100000);
   const shelf_count = clampInt(Number(raw.shelf_count), 0, 200);
+  const decorative_top_height_mm = clampNum(Number(raw.decorative_top_height_mm), 0, 100000);
+  const include_decorative_top = Boolean(raw.include_decorative_top ?? true);
 
   const usable_height_mm = cabinet_height_mm - kick_toe_mm - top_clearance_mm;
   const safeUsable = Math.max(0, usable_height_mm);
@@ -68,6 +81,22 @@ export function calculateShelves(raw: Partial<ShelfInputs>): ShelfResult {
     });
   }
 
+  const pieces: ShelfPiece[] = [
+    { name: 'Base board', width_mm: shelf_width_mm, height_mm: shelf_thickness_mm, quantity: 1 },
+    ...shelves.map((s) => ({ name: `Shelf ${s.index}`, width_mm: shelf_width_mm, height_mm: shelf_thickness_mm, quantity: 1 })),
+    { name: 'Top board', width_mm: shelf_width_mm, height_mm: shelf_thickness_mm, quantity: 1 },
+  ];
+
+  if (include_decorative_top) {
+    pieces.push({
+      name: 'Decorative top',
+      width_mm: shelf_width_mm,
+      height_mm: decorative_top_height_mm || 250,
+      quantity: 1,
+      note: 'Width matches the shelf width',
+    });
+  }
+
   return {
     inputs: {
       cabinet_height_mm,
@@ -76,10 +105,13 @@ export function calculateShelves(raw: Partial<ShelfInputs>): ShelfResult {
       shelf_count,
       top_clearance_mm,
       shelf_thickness_mm,
+      decorative_top_height_mm: decorative_top_height_mm || 250,
+      include_decorative_top,
     },
     usable_height_mm: safeUsable,
     spacing_mm,
     shelves,
+    pieces,
   };
 }
 
@@ -158,7 +190,7 @@ export function renderShelfSvg(container: HTMLElement, result: ShelfResult): voi
   }
 
   const thickness = result.inputs.shelf_thickness_mm;
-  
+
   // Draw top board (below the top clearance area)
   // Top board top is at (cabinetH - topClear), bottom is at (cabinetH - topClear - thickness)
   const topBoardTop = cabinetH - topClear;
@@ -168,7 +200,7 @@ export function renderShelfSvg(container: HTMLElement, result: ShelfResult): voi
     const topBoardH = Math.max(1, thickness * scaleY);
     svg += `<rect class="shelfRect" x="${x0}" y="${topBoardY}" width="${drawW}" height="${topBoardH}" rx="2"/>`;
   }
-  
+
   // Draw base board (on top of kick toe)
   if (thickness > 0) {
     const baseBoardY = y0 + drawH - (kick + thickness) * scaleY;
@@ -181,7 +213,7 @@ export function renderShelfSvg(container: HTMLElement, result: ShelfResult): voi
     bottom: Math.max(0, s.height_from_floor_mm - thickness),
     index: s.index,
   }));
-  
+
   // Add top board and base board regions
   const topBoardRegion = { top: topBoardTop, bottom: topBoardBottom, index: -1 }; // -1 for top board
   const baseBoardRegion = { top: kick + thickness, bottom: kick, index: 0 }; // 0 for base board
@@ -281,13 +313,13 @@ export function renderShelfSvg(container: HTMLElement, result: ShelfResult): voi
 
     const topDown = cabinetH - h;
     const bottomUp = h;
-    
+
     // Alternate sides: even indices on right, odd on left
     const topAnchor = idx % 2 === 0 ? 'start' : 'end';
     const topX = idx % 2 === 0 ? rightXTop + tick + 4 : rightXTop - tick - 4;
     const bottomAnchor = idx % 2 === 0 ? 'start' : 'end';
     const bottomX = idx % 2 === 0 ? rightXBottom + tick + 4 : rightXBottom - tick - 4;
-    
+
     svg += `<text class="dim-text" x="${topX}" y="${y + 4}" text-anchor="${topAnchor}">${fmtMm(topDown)} mm</text>`;
     svg += `<text class="dim-text" x="${bottomX}" y="${y + 4}" text-anchor="${bottomAnchor}">${fmtMm(bottomUp)} mm</text>`;
   }
@@ -313,8 +345,11 @@ export function initShelfCalculator(): void {
   const elTop = document.getElementById('shelf-top-clearance') as HTMLInputElement;
   const elThickness = document.getElementById('shelf-thickness') as HTMLInputElement;
   const elCount = document.getElementById('shelf-count') as HTMLInputElement;
+  const elDecorativeTop = document.getElementById('shelf-decorative-top-height') as HTMLInputElement;
+  const elIncludeDecorativeTop = document.getElementById('shelf-include-decorative-top') as HTMLInputElement;
   const svg = document.getElementById('shelf-svg') as HTMLElement;
   const tableBody = document.getElementById('shelf-table-body') as HTMLElement;
+  const pieceTableBody = document.getElementById('shelf-piece-table-body') as HTMLElement;
   const summary = document.getElementById('shelf-summary') as HTMLElement;
 
   const STORAGE_KEY = 'shelf_config_v1';
@@ -327,6 +362,8 @@ export function initShelfCalculator(): void {
       shelf_count: Number(elCount.value) || 0,
       top_clearance_mm: Number(elTop.value) || 0,
       shelf_thickness_mm: Number(elThickness?.value) || 0,
+      decorative_top_height_mm: Number(elDecorativeTop?.value) || 250,
+      include_decorative_top: Boolean(elIncludeDecorativeTop?.checked ?? true),
     };
   }
 
@@ -337,6 +374,8 @@ export function initShelfCalculator(): void {
     if (elThickness) elThickness.value = String(v.shelf_thickness_mm ?? 0);
     elCount.value = String(v.shelf_count);
     elTop.value = String(v.top_clearance_mm);
+    if (elDecorativeTop) elDecorativeTop.value = String(v.decorative_top_height_mm ?? 250);
+    if (elIncludeDecorativeTop) elIncludeDecorativeTop.checked = Boolean(v.include_decorative_top ?? true);
   }
 
   function render() {
@@ -353,7 +392,7 @@ export function initShelfCalculator(): void {
       if (result.inputs.shelf_count > 0 && totalShelfThickness > result.usable_height_mm) {
         summary.textContent = 'Not enough usable height for shelf thickness; reduce shelf count or thickness.';
       } else {
-        summary.textContent = `Usable height: ${fmtMm(result.usable_height_mm)} mm; gap: ${fmtMm(result.spacing_mm)} mm; thickness: ${fmtMm(result.inputs.shelf_thickness_mm)} mm`;
+        summary.textContent = `Usable height: ${fmtMm(result.usable_height_mm)} mm; gap: ${fmtMm(result.spacing_mm)} mm; thickness: ${fmtMm(result.inputs.shelf_thickness_mm)} mm; cut pieces: ${result.pieces.length}`;
       }
     }
 
@@ -371,6 +410,18 @@ export function initShelfCalculator(): void {
       tableBody.appendChild(tr);
     }
 
+    pieceTableBody.innerHTML = '';
+    for (const piece of result.pieces) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${piece.name}</td>
+        <td>${fmtMm(piece.width_mm)}</td>
+        <td>${fmtMm(piece.height_mm)}</td>
+        <td>${piece.quantity}</td>
+        <td>${piece.note || ''}</td>`;
+      pieceTableBody.appendChild(tr);
+    }
+
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(result.inputs));
     } catch {
@@ -382,8 +433,8 @@ export function initShelfCalculator(): void {
     render();
   }
 
-  [elHeight, elWidth, elKick, elTop, elCount, elThickness].forEach((el) => el.addEventListener('change', onChange));
-  [elHeight, elWidth, elKick, elTop, elCount, elThickness].forEach((el) => el.addEventListener('input', onChange));
+  [elHeight, elWidth, elKick, elTop, elCount, elThickness, elDecorativeTop, elIncludeDecorativeTop].forEach((el) => el.addEventListener('change', onChange));
+  [elHeight, elWidth, elKick, elTop, elCount, elThickness, elDecorativeTop, elIncludeDecorativeTop].forEach((el) => el.addEventListener('input', onChange));
 
   // initial load
   const raw = localStorage.getItem(STORAGE_KEY);

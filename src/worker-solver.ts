@@ -1,4 +1,4 @@
-import { solve } from './solver'
+import { solve } from './solver.js'
 
 self.addEventListener('message', (e: MessageEvent) => {
   const msg = e.data;
