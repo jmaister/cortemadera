@@ -67,5 +67,21 @@ button:hover{opacity:0.95}
     .nav{display:none !important}
 
     /* Generic hide for any element */
-    .no-print{display:none !important}
+    .no-print{
+        display:none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+    }
+    .no-print-layout.shelf-layout {
+        /* Remove the fixed column and collapse to 1 fraction */
+        grid-template-columns: 1fr !important;
+
+        /* Remove the gaps and padding */
+        gap: 0 !important;
+        padding: 0 !important;
+
+        /* Ensure it doesn't try to maintain rows for the hidden content */
+        grid-template-rows: auto !important;
+    }
 }
